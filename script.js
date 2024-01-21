@@ -4,15 +4,12 @@ const jsonUrl = 'https://api.github.com/repos/Ross-Watkins/Music/contents/librar
 fetch(jsonUrl)
     .then(response => response.json())
     .then(data => {
-        const player = document.getElementById('player');
-        const audio = document.getElementById('audio');
-        const title = document.getElementById('title');
+        const audio = new Audio();
         const tracklist = document.getElementById('tracklist');
 
         let currentTrack = 0;
 
         function loadTrack(trackIndex) {
-            title.textContent = data[trackIndex].name.substring(0, data[trackIndex].name.lastIndexOf('.'));
             audio.src = data[trackIndex].download_url;
             audio.pause();
             audio.load();
@@ -31,9 +28,25 @@ fetch(jsonUrl)
             const trackElement = document.createElement('div');
             trackElement.className = 'track';
             trackElement.innerHTML = `
-                <span>${track.name.substring(0, track.name.lastIndexOf('.'))}</span>
-                <button onclick="loadTrack(${index})">Play</button>
+                <span onclick="loadTrack(${index})">${track.name.substring(0, track.name.lastIndexOf('.'))}</span>
             `;
             tracklist.appendChild(trackElement);
+        });
+
+        // Control bar buttons
+        document.getElementById('prev').addEventListener('click', () => {
+            currentTrack = (currentTrack - 1 + data.length) % data.length;
+            loadTrack(currentTrack);
+        });
+        document.getElementById('play').addEventListener('click', () => {
+            if (audio.paused) {
+                audio.play();
+            } else {
+                audio.pause();
+            }
+        });
+        document.getElementById('next').addEventListener('click', () => {
+            currentTrack = (currentTrack + 1) % data.length;
+            loadTrack(currentTrack);
         });
     });
