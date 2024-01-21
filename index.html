@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Music</title>
     <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body>
-    <div id="tracklist"></div>
-
-    <div id="control-bar">
+    <div id="player">
         <button id="prev">Prev</button>
         <button id="play">Play</button>
         <button id="next">Next</button>
+        <input id="scrubber" type="range" min="0" value="0">
+        <ul id="playlist"></ul>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>

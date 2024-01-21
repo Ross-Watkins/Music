@@ -1,52 +1,50 @@
-// URL of the JSON file in your GitHub repository
-const jsonUrl = 'https://api.github.com/repos/Ross-Watkins/Music/contents/library';
+window.onload = function() {
+    var audio = new Audio();
+    var playlist = document.getElementById('playlist');
+    var tracks = [];
+    var currentTrack = 0;
 
-fetch(jsonUrl)
-    .then(response => response.json())
-    .then(data => {
-        const audio = new Audio();
-        const tracklist = document.getElementById('tracklist');
-
-        let currentTrack = 0;
-
-        function loadTrack(trackIndex) {
-            audio.src = data[trackIndex].download_url;
-            audio.pause();
-            audio.load();
-            audio.play();
-        }
-
-        loadTrack(currentTrack);
-
-        audio.addEventListener('ended', () => {
-            currentTrack = (currentTrack + 1) % data.length;
-            loadTrack(currentTrack);
+    fetch('https://api.github.com/repos/Ross-Watkins/Music/contents/library')
+        .then(response => response.json())
+        .then(data => {
+            tracks = data.map(item => 'https://raw.githubusercontent.com/Ross-Watkins/Music/main/library/' + item.name);
+            tracks.forEach(function(track, index) {
+                var li = document.createElement('li');
+                li.textContent = track;
+                playlist.appendChild(li);
+            });
+            playTrack(currentTrack);
         });
 
-        // Create the track list
-        data.forEach((track, index) => {
-            const trackElement = document.createElement('div');
-            trackElement.className = 'track';
-            trackElement.innerHTML = `
-                <span onclick="loadTrack(${index})">${track.name.substring(0, track.name.lastIndexOf('.'))}</span>
-            `;
-            tracklist.appendChild(trackElement);
-        });
+    function playTrack(index) {
+        audio.src = tracks[index];
+        audio.play();
+    }
 
-        // Control bar buttons
-        document.getElementById('prev').addEventListener('click', () => {
-            currentTrack = (currentTrack - 1 + data.length) % data.length;
-            loadTrack(currentTrack);
-        });
-        document.getElementById('play').addEventListener('click', () => {
-            if (audio.paused) {
-                audio.play();
-            } else {
-                audio.pause();
-            }
-        });
-        document.getElementById('next').addEventListener('click', () => {
-            currentTrack = (currentTrack + 1) % data.length;
-            loadTrack(currentTrack);
-        });
+    document.getElementById('prev').addEventListener('click', function() {
+        currentTrack = (currentTrack - 1 + tracks.length) % tracks.length;
+        playTrack(currentTrack);
     });
+
+    document.getElementById('play').addEventListener('click', function() {
+        if (audio.paused) {
+            audio.play();
+        } else {
+            audio.pause();
+        }
+    });
+
+    document.getElementById('next').addEventListener('click', function() {
+        currentTrack = (currentTrack + 1) % tracks.length;
+        playTrack(currentTrack);
+    });
+
+    audio.addEventListener('timeupdate', function() {
+        document.getElementById('scrubber').max = audio.duration;
+        document.getElementById('scrubber').value = audio.currentTime;
+    });
+
+    document.getElementById('scrubber').addEventListener('input', function() {
+        audio.currentTime = this.value;
+    });
+};
